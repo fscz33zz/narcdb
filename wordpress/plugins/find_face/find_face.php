@@ -48,7 +48,7 @@ function ff_compute_descriptor( $image ) {
         ff_log_message("Please make sure there is only one person in the image: " . $image);
         return false;
     }
-    
+
     $fld = new FaceLandmarkDetection( $LANDMARK_MODEL );
     $fr = new FaceRecognition( $RECOGNITION_MODEL );
 
@@ -87,9 +87,14 @@ function ff_search( $search, $callback ) {
         if ($posts && $media_posts) {
             foreach ($posts as $post) {
 
+                $thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'single-post-thumbnail' );
+                if ( $thumbnail ) {
+                    $thumbnail = strrchr( strrchr( $thumbnail[0], "wp-content", false ), ".", true);
+                }
+
                 foreach ($media_posts as $media_post) {
                     $post_meta = get_post_meta($media_post->ID);
-                    
+
                     if ( ! array_key_exists($CONTAINS_FACE, $post_meta) ) {
                         continue;
                     }
@@ -98,8 +103,8 @@ function ff_search( $search, $callback ) {
                     $file_path = strrchr( get_attached_file( $media_post->ID ), "/", true );
                     $file_base = strrchr( $file_path, "wp-content", false ) . "/" . $media_post->post_title;
 
-                    // check whether attachment is referenced in post content
-                    if ( !str_contains($post->post_content, $file_base) ) {
+                    // check whether attachment is referenced in thumbnail or post content
+                    if ( ! ( str_contains($post->post_content, $file_base) || $thumbnail == $file_base ) ) {
                         continue;
                     }
 
@@ -114,7 +119,7 @@ function ff_search( $search, $callback ) {
                     }
 
                     if ( ! in_array( $post->ID, $posts_found) ) {
-                        $posts_found[] = $post->post_title;
+                        $posts_found[] = $post->ID;
                     }
                 }
             }
@@ -163,3 +168,57 @@ function ff_mark_post( $id ) {
 add_action("add_attachment", "ff_mark_post", 10, 1);
 add_action("attachment_updated", "ff_mark_attachment", 10, 3);
 add_action("search_face", "ff_search", 10, 2);
+
+function ff_results() {
+
+    $ids = $_GET['ids'];
+    $HTML  = '<div class="posts">';
+
+
+    foreach (explode(',', $ids) as $post_id) {
+        //ff_log_message(post_class('posts-entry fbox', $post_id));
+        $HTML .= '<article id="post-' . $post_id . '" class="posts-entry fbox" >';
+        $HTML .= '<header class="entry-header">';
+        $HTML .= sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_the_permalink($post_id) ) ) . get_the_title( $post_id, ) . '</a></h2>';
+        if ( 'post' === get_post_type($post_id) ) {
+            $HTML .= '<div class="entry-meta">';
+            $HTML .= get_the_date('', $post_id);
+            $HTML .= '</div><!-- .entry-meta -->';
+        }
+        $HTML .= '</header><!-- .entry-header -->';
+        if ( has_post_thumbnail($post_id) ) {
+            $HTML .= '<div class="featured-thumbnail">';
+            $HTML .= '<a href="' . get_the_permalink($post_id) . '" rel="bookmark">' . get_the_post_thumbnail($post_id, 'responsiveblogily-small') . '</a>';
+            $HTML .= '</div>';
+        }
+        $HTML .= '<div class="entry-summary" style="text-align: center;">';
+        $HTML .= get_the_excerpt($post_id);
+        $HTML .= '</div><!-- .entry-summary -->';
+        //$HTML .= '<footer class="entry-footer">';
+        //$HTML .= responsiveblogily_entry_footer();
+        //$HTML .= '</footer><!-- .entry-footer -->';
+        $HTML .= '</article><!-- #post-' . $post_id . ' -->';
+    }
+
+    /*
+    foreach (explode(',', $ids) as $post_id) {
+        // because now we loop all ids and it can be multiple ids
+        // it would be best to warp each one in its own container
+        $HTML .='<div class="post">';
+
+        $HTML .= '<div class="thumb">' . get_the_post_thumbnail($post_id, 'medium') . '</div>';
+        $HTML .= '<div class="content">';
+        $HTML .= '<h4>' . get_the_title($post_id) . '</h4>';
+        $HTML .= '<p>' . get_the_excerpt($post_id) . '</p>';
+        $HTML .= '</div>';
+
+        // this is the closing tag for our "post" container
+        $HTML .='</div>'; // <div class="post">
+    }*/
+
+    $HTML .= '</div>';
+
+    return $HTML;
+}
+
+add_shortcode( 'ff_results', 'ff_results' );
