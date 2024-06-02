@@ -12,12 +12,14 @@
  *
  */
 
+$LOGGING = true;
 $TOLERANCE = 0.5;
 $CONTAINS_FACE = "__ff_contains_face__";
+$REDIRECT_PATH = "?page_id=277&ids=";
+$NOTHING_FOUND = "No posts found.";
 $RECOGNITION_MODEL = __DIR__ . "/dlib_face_recognition_resnet_model_v1.dat";
 $LANDMARK_MODEL = __DIR__ . "/shape_predictor_5_face_landmarks.dat";
 $DETECTION_MODEL = __DIR__ . "/mmod_human_face_detector.dat";
-$LOGGING = true;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
@@ -70,6 +72,7 @@ function ff_compare( $left, $right ) {
 
 function ff_search( $search ) {
     global $CONTAINS_FACE;
+    global $REDIRECT_PATH;
 
     $posts_found = array();
     $desc = ff_compute_descriptor( $search );
@@ -125,7 +128,7 @@ function ff_search( $search ) {
             }
         }
     }
-    return "?page_id=277&ids=" . implode(", ", $posts_found);
+    return $REDIRECT_PATH . implode(", ", $posts_found);
 }
 
 function ff_mark_attachment( $id, $post, $before ) {
@@ -166,11 +169,12 @@ function ff_mark_post( $id ) {
 }
 
 function ff_results() {
-    
+    global $NOTHING_FOUND;
+
     $ids = explode(',', $_GET['ids']);
 
     if ( ! $ids || empty($ids) || $ids[0] == '' ) {
-        return '<div class="posts" style="text-align:center;">No posts found.</div>';
+        return '<div class="posts" style="text-align:center;">' . $NOTHING_FOUND . '</div>';
     }
 
     $HTML  = '<div class="posts">';
