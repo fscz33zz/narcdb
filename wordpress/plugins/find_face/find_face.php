@@ -170,11 +170,14 @@ add_action("add_attachment", "ff_mark_post", 10, 1);
 
 function ff_results() {
 
-    $ids = $_GET['ids'];
+    $ids = explode(',', $_GET['ids']);
+
+    if ( ! $ids || empty($ids) || $ids[0] == '' ) {
+        return '<div class="posts" style="text-align:center;">No posts found.</div>';
+    }
+
     $HTML  = '<div class="posts">';
-
-
-    foreach (explode(',', $ids) as $post_id) {
+    foreach ($ids as $post_id) {
         //ff_log_message(post_class('posts-entry fbox', $post_id));
         $HTML .= '<article id="post-' . $post_id . '" class="posts-entry fbox" >';
         $HTML .= '<header class="entry-header">';
@@ -198,23 +201,6 @@ function ff_results() {
         //$HTML .= '</footer><!-- .entry-footer -->';
         $HTML .= '</article><!-- #post-' . $post_id . ' -->';
     }
-
-    /*
-    foreach (explode(',', $ids) as $post_id) {
-        // because now we loop all ids and it can be multiple ids
-        // it would be best to warp each one in its own container
-        $HTML .='<div class="post">';
-
-        $HTML .= '<div class="thumb">' . get_the_post_thumbnail($post_id, 'medium') . '</div>';
-        $HTML .= '<div class="content">';
-        $HTML .= '<h4>' . get_the_title($post_id) . '</h4>';
-        $HTML .= '<p>' . get_the_excerpt($post_id) . '</p>';
-        $HTML .= '</div>';
-
-        // this is the closing tag for our "post" container
-        $HTML .='</div>'; // <div class="post">
-    }*/
-
     $HTML .= '</div>';
 
     return $HTML;
