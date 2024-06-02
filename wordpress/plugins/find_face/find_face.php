@@ -130,7 +130,7 @@ function ff_mark_attachment( $id, $post, $before ) {
         return;
     }
 
-    update_post_meta( $id, $CONTAINS_FACE, $post->post_content );
+    update_post_meta( $id, $CONTAINS_FACE, unserialize($post->post_content) );
 
     wp_update_post(array(
         'ID' => $id,
