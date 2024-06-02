@@ -68,7 +68,7 @@ function ff_compare( $left, $right ) {
     return $eucl < $TOLERANCE;
 }
 
-function ff_search( $search, $callback ) {
+function ff_search( $search ) {
     global $CONTAINS_FACE;
 
     $posts_found = array();
@@ -125,8 +125,9 @@ function ff_search( $search, $callback ) {
             }
         }
     }
-    $callback( $posts_found );
+    return "?page_id=277&ids=" . implode(", ", $posts_found);
 }
+add_filter("forminator_upload_file", "ff_search", 10, 2);
 
 function ff_mark_attachment( $id, $post, $before ) {
     global $CONTAINS_FACE;
@@ -143,6 +144,7 @@ function ff_mark_attachment( $id, $post, $before ) {
         'post_content' => ''
     ));
 }
+add_action("attachment_updated", "ff_mark_attachment", 10, 3);
 
 function ff_mark_post( $id ) {
     global $CONTAINS_FACE;
@@ -164,10 +166,7 @@ function ff_mark_post( $id ) {
         'post_content' => serialize($desc)
     ));
 }
-
 add_action("add_attachment", "ff_mark_post", 10, 1);
-add_action("attachment_updated", "ff_mark_attachment", 10, 3);
-add_action("search_face", "ff_search", 10, 2);
 
 function ff_results() {
 

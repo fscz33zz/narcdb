@@ -505,22 +505,13 @@ class Forminator_Upload extends Forminator_Field {
 						self::generate_upload_metadata( $upload_id, $file_path );
 					}
 
-					do_action( 'search_face', $file_path, function($found) {
-						ff_log_message("the following posts contain the face you searched for.");
-						if ( !$found ) {
-							ff_log_message("-- none --");
-							return;
-						} 
-						foreach($found as $f) {
-							ff_log_message($f);
-						}
-					});
+					$message = apply_filters( 'forminator_upload_file', $file_path );
 
 					return array(
 						'success'   => true,
 						'file_name' => $filename,
 						'file_url'  => $file_url,
-						'message'   => '',
+						'message'   => $message,
 						'file_path' => wp_normalize_path( $file_path ),
 					);
 

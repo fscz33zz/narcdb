@@ -943,10 +943,11 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 				}
 			}
 
-			self::process_uploads( 'upload' );
+			$redirect = self::process_uploads( 'upload' );
+			ff_log_message($message);
 			self::handle_stripe( $entry );
 			self::handle_paypal( $entry );
-			self::process_uploads( 'transfer' );
+			self::process_uploads( 'transfer' );			
 			self::maybe_create_post();
 
 			// save field_data_array with password field for registration forms.
@@ -959,7 +960,7 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 
 			self::send_email( $entry );
 
-			$response = self::get_response( $entry );
+			$response = self::get_response( $entry, $redirect );
 		} catch ( Exception $e ) {
 			return self::return_error( $e->getMessage() );
 		}
@@ -1122,12 +1123,12 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 	 * @param object $entry Form entry object.
 	 * @return type
 	 */
-	private static function get_response( $entry ) {
+	private static function get_response( $entry, mixed $redirect = false ) {
 		if ( self::$is_draft ) {
 			return self::get_draft_response( $entry );
 		}
 
-		self::set_behaviour_settings( $entry );
+		self::set_behaviour_settings( $entry, $redirect );
 		$response = self::return_success();
 
 		if ( empty( self::$module_settings['enable-ajax'] ) ) {
@@ -1261,7 +1262,7 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 	 *
 	 * @param object $entry Entry.
 	 */
-	private static function set_behaviour_settings( $entry ) {
+	private static function set_behaviour_settings( $entry, mixed $redirect = false) {
 		$all_behaviours   = array( 'behaviour-thankyou', 'behaviour-hide', 'behaviour-redirect' );
 		$behavior_options = self::get_relevant_behavior_options();
 		if ( ! isset( $behavior_options['submission-behaviour'] ) || ! in_array( $behavior_options['submission-behaviour'], $all_behaviours, true ) ) {
@@ -1279,7 +1280,7 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 			// replace misc data vars with value.
 			$redirect_url                   = forminator_replace_variables( $redirect_url, self::$module_id );
 			$newtab                         = forminator_replace_variables( $newtab, self::$module_id );
-			self::$response_attrs['url']    = esc_url( $redirect_url );
+			self::$response_attrs['url']    = esc_url( $redirect ? $redirect : $redirect_url );
 			self::$response_attrs['newtab'] = esc_html( $newtab );
 		}
 
@@ -2304,6 +2305,8 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 		}
 
 		self::check_errors();
+
+		return isset( $upload_data['message'] ) ? $upload_data['message'] : false;
 	}
 
 	/**
