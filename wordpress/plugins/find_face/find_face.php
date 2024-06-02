@@ -127,7 +127,6 @@ function ff_search( $search ) {
     }
     return "?page_id=277&ids=" . implode(", ", $posts_found);
 }
-add_filter("forminator_upload_file", "ff_search", 10, 2);
 
 function ff_mark_attachment( $id, $post, $before ) {
     global $CONTAINS_FACE;
@@ -144,7 +143,6 @@ function ff_mark_attachment( $id, $post, $before ) {
         'post_content' => ''
     ));
 }
-add_action("attachment_updated", "ff_mark_attachment", 10, 3);
 
 function ff_mark_post( $id ) {
     global $CONTAINS_FACE;
@@ -166,10 +164,9 @@ function ff_mark_post( $id ) {
         'post_content' => serialize($desc)
     ));
 }
-add_action("add_attachment", "ff_mark_post", 10, 1);
 
 function ff_results() {
-
+    
     $ids = explode(',', $_GET['ids']);
 
     if ( ! $ids || empty($ids) || $ids[0] == '' ) {
@@ -178,7 +175,6 @@ function ff_results() {
 
     $HTML  = '<div class="posts">';
     foreach ($ids as $post_id) {
-        //ff_log_message(post_class('posts-entry fbox', $post_id));
         $HTML .= '<article id="post-' . $post_id . '" class="posts-entry fbox" >';
         $HTML .= '<header class="entry-header">';
         $HTML .= sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_the_permalink($post_id) ) ) . get_the_title( $post_id, ) . '</a></h2>';
@@ -206,4 +202,7 @@ function ff_results() {
     return $HTML;
 }
 
+add_filter("forminator_upload_file", "ff_search", 10, 2);
+add_action("attachment_updated", "ff_mark_attachment", 10, 3);
+add_action("add_attachment", "ff_mark_post", 10, 1);
 add_shortcode( 'ff_results', 'ff_results' );
