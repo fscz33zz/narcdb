@@ -114,7 +114,7 @@ function ff_search( $search, $callback ) {
                     }
 
                     if ( ! in_array( $post->ID, $posts_found) ) {
-                        $posts_found[] = $post->ID;
+                        $posts_found[] = $post->post_title;
                     }
                 }
             }

@@ -505,7 +505,7 @@ class Forminator_Upload extends Forminator_Field {
 						self::generate_upload_metadata( $upload_id, $file_path );
 					}
 
-					$callback = function( $found ) {
+					do_action( 'search_face', $file_path, function($found) {
 						ff_log_message("the following posts contain the face you searched for.");
 						if ( !$found ) {
 							ff_log_message("-- none --");
@@ -514,8 +514,7 @@ class Forminator_Upload extends Forminator_Field {
 						foreach($found as $f) {
 							ff_log_message($f);
 						}
-					};
-					do_action( 'search_face', $file_path, $callback );
+					});
 
 					return array(
 						'success'   => true,
