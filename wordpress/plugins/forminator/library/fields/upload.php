@@ -505,13 +505,13 @@ class Forminator_Upload extends Forminator_Field {
 						self::generate_upload_metadata( $upload_id, $file_path );
 					}
 
-					$message = apply_filters( 'forminator_upload_file', $file_path );
+					$redirect = apply_filters( 'forminator_upload_file', $file_path );
 
 					return array(
 						'success'   => true,
 						'file_name' => $filename,
 						'file_url'  => $file_url,
-						'message'   => $message,
+						'message'   => $redirect,
 						'file_path' => wp_normalize_path( $file_path ),
 					);
 
